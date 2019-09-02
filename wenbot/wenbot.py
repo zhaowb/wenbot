@@ -67,7 +67,7 @@ def play(self, action, *args):
         ('click', 'input[type=submit]'),
         ('text', 'input[name=passwd]', passwd, 'clear'),
         ('wait', 1),
-        ('click', 'input[type=submit]', 'wait-clickable'),
+        ('click', 'input[type=submit]'),
         ('click', ('#sometable input', 3)), # click on 3rd input in that table
             # in this case '#sometable input:nth-of-type(3)' may not work
             # because the input elements may have different parents like td
