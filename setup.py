@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="wenbot",
-    version="0.0.2",
+    version="0.0.3",
     author="Wenbo Zhao",
     author_email="zhaowb@gmail.com",
     description="Simple bot wrapper of selenium basic functions",
@@ -19,5 +19,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    install_requires=['selenium']
+    install_requires=['selenium'],
+    py_modules=['wenbot']
 )
