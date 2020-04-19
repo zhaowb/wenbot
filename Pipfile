@@ -9,6 +9,8 @@ wheel = "*"
 twine = "*"
 ipython = "*"
 pylint = "*"
+safety = "*"
+bleach = ">=3.1.4"
 
 [packages]
 selenium = "*"
