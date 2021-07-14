@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="wenbot",
-    version="0.0.4",
+    version="0.0.5",
     author="Wenbo Zhao",
     author_email="zhaowb@gmail.com",
     description="Simple bot wrapper of selenium basic functions",
