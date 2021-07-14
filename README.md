@@ -18,5 +18,6 @@ TODO
 ```
 
 # change history
+0.0.6 2021-07-14 replace print with log
 0.0.5 2021-07-14 Bumps urllib3 from 1.26.4 to 1.26.5
 

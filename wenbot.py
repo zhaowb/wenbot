@@ -9,6 +9,7 @@ The only reason I choose this name is it's short and not taken :D
 
 # pylint: disable=invalid-name
 import json
+import logging
 import time
 from functools import wraps
 
@@ -18,6 +19,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 
 
+log = logging.getLogger('wenbot')
 def select(self, css, _filter=None):
     """calls find_elements_by_css_selector
     :_filter: if callable, return [i for i in elements if _filter(i)]
@@ -38,7 +40,7 @@ def select(self, css, _filter=None):
         else:
             res = [i for i in eles if i.text.strip() == _filter]
         if not res:
-            print(f'select not found "{_filter}" in {[i.text.strip() for i in eles]}')
+            log.info(f'select not found "{_filter}" in {[i.text.strip() for i in eles]}')
         eles = res
     return eles
 
@@ -90,7 +92,7 @@ def play(self, action, *args):
                 selector, nth = selector
             ele = next(iter(self.select(selector)[nth:]), None)
             if not ele:
-                print(f'*WARNING: {_func.__name__} nothing for '
+                log.warning(f'{_func.__name__} nothing for '
                       f'{repr(selector)} nth={nth}')
                 return None
             return _func(ele, *args, **kw)
@@ -110,7 +112,7 @@ def play(self, action, *args):
                 # selenium.common.exceptions.WebDriverException: Message: unknown error:
                 # Element <div class="dropdown-group">...</div> is not clickable at point
                 if 'clickable' in str(exc):
-                    print(f'*WARNING: waiting for clickable', str(exc))
+                    log.warning(f'waiting for clickable', str(exc))
                     time.sleep(1)
                     continue
                 raise
@@ -132,7 +134,7 @@ def play(self, action, *args):
     action_func = actions.get(action)
     time.sleep(0.1)
     _ = action_func(
-        *args) if action_func else print(f'illegal action {repr(action)} {repr(args)}')
+        *args) if action_func else log.info(f'illegal action {repr(action)} {repr(args)}')
 
 
 Chrome.play = play
@@ -164,7 +166,7 @@ def left_shift_click(self, br):
     # size = self.size  # {'height': 37, 'width': 302}
     # ac = ActionChains(br).key_down(Keys.LEFT_SHIFT).move_to_element(
     #     self).move_by_offset(-size['width']/2+10, 0).click().key_up(Keys.LEFT_SHIFT)
-    print(
+    log.info(
         f'left_shift_clicked on {self} {self.tag_name} {self.get_attribute("outerHTML")}')
 
 
@@ -248,7 +250,7 @@ def open_chrome(headless=True, proxy=False, window_size=(1920, 5000)):
                 lambda *args:
                 (
                     proxy_server[0].stop(),
-                    print('Browsermob-proxy server stopped', args),
+                    log.info(f'Browsermob-proxy server stopped {args}'),
                 )
             )
         proxy = proxy_server[0].create_proxy()
@@ -286,7 +288,7 @@ def open_chrome(headless=True, proxy=False, window_size=(1920, 5000)):
         lambda *args:
         (
             br.quit(),
-            print('Chrome quit', args),
+            log.info(f'Chrome quit {args}'),
         )
     )
     return br
@@ -317,7 +319,7 @@ class Bot:
         if screenshot_filename:
             fname = time.strftime(screenshot_filename)
             self.br.save_screenshot(fname)
-            print('screenshot saved to', fname)
+            log.info(f'screenshot saved to {fname}')
 
     def sss(self):
         """alias of save_screenshot with default file name"""
@@ -339,7 +341,7 @@ class GoogleSearch(Bot):
         self.play([
             ('open', 'https://www.google.co.nz/'),
         ])
-        print('open', self.current_url)
+        log.info(f'open {self.current_url}')
         self.save_screenshot()
 
     def is_recaptcha(self):
