@@ -112,7 +112,7 @@ def play(self, action, *args):
                 # selenium.common.exceptions.WebDriverException: Message: unknown error:
                 # Element <div class="dropdown-group">...</div> is not clickable at point
                 if 'clickable' in str(exc):
-                    log.warning(f'waiting for clickable', str(exc))
+                    log.info(f'waiting for clickable {exc}')
                     time.sleep(1)
                     continue
                 raise
