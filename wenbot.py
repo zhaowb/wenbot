@@ -302,6 +302,9 @@ class Bot:
                  proxy=False,
                  window_size=(1920, 5000),
                  screenshot_filename='/tmp/botss-%Y%m%d-%H%M%S.png'):
+        """
+        :param proxy: True to turn on proxy, see README.md of how to setup proxy and get proxy logs
+        """
         self.br = open_chrome(
             headless=headless, proxy=proxy, window_size=window_size)
         self.proxy = self.br.proxy
