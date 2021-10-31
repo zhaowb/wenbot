@@ -1,4 +1,4 @@
-# wenbot
+# Wenbot
 Simple bot wrapper of selenium basic functions
 
 Sample code:
@@ -13,18 +13,36 @@ bot.play([
 input('enter to stop browser')
 ```
 
-# optional proxy support
+# Optional Proxy Support
 Requires browsermob-proxy binary, see https://github.com/lightbody/browsermob-proxy/releases.
 Requires java to run browsermob-proxy binary.
 Default browsermob-proxy binary path is set in `wenbot.browsermob_proxy_bin`.
 Requires pypi package *browsermobproxy*, install `pip install browsermob-proxy`.
 
-Sample setup:
-- download [browsermob-proxy-2.1.4-bin.zip](https://github.com/lightbody/browsermob-proxy/releases/download/browsermob-proxy-2.1.4/browsermob-proxy-2.1.4-bin.zip)
-- `unzip browsermob-proxy-2.1.4-bin.zip` in current directory, it will create folder browsermob-proxy-2.1.4-bin
-- make sure `java` works
+## Sample Setup
+```
+wget https://github.com/lightbody/browsermob-proxy/releases/download/browsermob-proxy-2.1.4/browsermob-proxy-2.1.4-bin.zip
+unzip browsermob-proxy-2.1.4-bin.zip
+java --version  # make sure java works
+pip install browsermob-proxy
+```
 
-Sample code:
+## Support https Sites
+User needs install certification file manually to access https sites properly.
+See browsermob document [here](https://github.com/lightbody/browsermob-proxy#ssl-support).
+
+Steps in macos:
+- download cert file
+```
+wget https://raw.githubusercontent.com/lightbody/browsermob-proxy/master/browsermob-core/src/main/resources/sslSupport/ca-certificate-rsa.cer
+```
+- Open keychain (or this also opens keychan: Chrome menu: Settings > Privacy and security > Security > Manage certificates)
+- Keychain menu: File > Import items > import 'ca-certificate-rsa.cer'
+- It's listed under 'certificates' as 'LittleProxy MITM' but not trusted
+- right click menu > Get info > expand 'Trust' > "When using this certificate" = "Always Trust"
+- Remember delete this item after testing is done.
+
+## Sample Code
 ```
 import json
 import pydash
@@ -56,8 +74,18 @@ Use `bot.proxy.new_har()` to record new HAR data.
 
 Default only record headers, not content or binary content (in brosermob-proxy terms).
 
+To specify different options: eg.
+```
+bot.proxy.new_har(options={
+    'captureHeaders': True,
+    'captureContent': True,
+    'captureBinaryContent': False,
+})
+```
 
-# change history
+# Change History
+
+- 0.0.9 2021-10-31 update doc for https sites with browsermobproxy and update dependency for bs4
 - 0.0.8 2021-08-19 add sample code
 - 0.0.7 2021-07-14 bugfix
 - 0.0.6 2021-07-14 replace print with log

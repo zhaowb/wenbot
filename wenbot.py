@@ -8,16 +8,17 @@ The only reason I choose this name is it's short and not taken :D
 """
 
 # pylint: disable=invalid-name
+import atexit
 import json
 import logging
 import time
 from functools import wraps
 
+import bs4
 from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
-
 
 log = logging.getLogger('wenbot')
 def select(self, css, _filter=None):
@@ -147,7 +148,6 @@ def body_html(self):
 
 def body_soup(self):
     """helper return beautifulsoup object of current body_html"""
-    import bs4
     return bs4.BeautifulSoup(body_html(self), 'html5lib')
 
 
@@ -205,7 +205,7 @@ br.switch_to.parent_frame()  # switch back
 # https://github.com/lightbody/browsermob-proxy/releases
 # requires java to run browsermob-proxy
 browsermob_proxy_bin = 'browsermob-proxy-2.1.4/bin/browsermob-proxy'
-proxy_server = [None]  # use list to bypass global var modification
+proxy_server = None
 
 # change default options
 
@@ -240,23 +240,36 @@ def har_request_headers(har, offset=-1):
 
 def open_chrome(headless=True, proxy=False, window_size=(1920, 5000)):
     """helper to create Chrome object with proxy setup"""
-    import atexit
+    global proxy_server
     if proxy:
-        if not proxy_server[0]:
+        # input arg is boolean
+        if not proxy_server:
             from browsermobproxy import Server
-            proxy_server[0] = Server(browsermob_proxy_bin)
-            proxy_server[0].start()
+            proxy_server = Server(browsermob_proxy_bin)
+            proxy_server.start()
+            # warn: browsermobproxy can't shutdown java process properly in macos
             atexit.register(
                 lambda *args:
                 (
-                    proxy_server[0].stop(),
-                    log.info(f'Browsermob-proxy server stopped {args}'),
+                    proxy_server.stop(),
+                    log.info(f'Browsermob-proxy server stop called'),
                 )
             )
-        proxy = proxy_server[0].create_proxy()
+        proxy = proxy_server.create_proxy()
+        atexit.register(
+            lambda *args:
+            (
+                proxy.close(),
+                log.info(f'Browsermob-proxy proxy({proxy.proxy}) close called'),
+                # browsermobproxy can close/delete proxy instance properly
+            )
+        )
+        # Use a decorator to set default params so user can call
+        # `br.proxy.new_har()` to create new har dataset with default settings
         proxy.new_har = proxy_new_har(proxy.new_har)
-        proxy.new_har()
+        proxy.new_har()  # start new har dataset
         # new_har() returns (statuscode, har)
+        # now proxy is browsermobproxy.Client object
 
     options = ChromeOptions()
     options.add_argument('--disable-extensions')
@@ -264,17 +277,6 @@ def open_chrome(headless=True, proxy=False, window_size=(1920, 5000)):
         options.add_argument(f'--proxy-server={proxy.proxy}')
     if headless:
         options.add_argument('headless')  # if headless
-    # the following code doesn't work, just save for reference
-    # prefs = {
-    #     "plugins.plugins_list": [{
-    #         "enabled": False,
-    #         "name": "Chrome PDF Viewer"
-    #     }],  # Disable Chrome's PDF Viewer
-    #     "download.default_directory": '/tmp/',
-    #     "download.extensions_to_open": "applications/pdf",
-    # }
-    # options.add_experimental_option("prefs", prefs)
-    # === end of save code
     br = Chrome(options=options)
     # default is 0. wait before throw 'No Such Element'
     br.implicitly_wait(10)
@@ -351,13 +353,12 @@ class GoogleSearch(Bot):
         return bool(self.select('form#captcha-form'))
 
     def search(self, query='something'):
-        from bs4 import BeautifulSoup
         self.play([
             ('text', 'form input[name=q]', query, 'clear, enter'),
         ])
         self.save_screenshot()
         htm = self.select('body')[0].html()
-        soup = BeautifulSoup(htm, 'html5lib')
+        soup = bs4.BeautifulSoup(htm, 'html5lib')
         return [
             (g.find('h3').getText().strip(), g.find('a')['href'])
             for g in soup.select('div.srg div.g')
