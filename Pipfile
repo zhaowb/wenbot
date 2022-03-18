@@ -7,7 +7,7 @@ verify_ssl = true
 setuptools = "*"
 wheel = "*"
 twine = "*"
-ipython = "*"
+ipython = ">=7.16.3"
 pylint = "*"
 safety = "*"
 bleach = ">=3.1.4"
