@@ -368,12 +368,25 @@ class GoogleSearch(Bot):
 if __name__ == '__main__':
     # pylint: disable=missing-docstring
     def main():
-        br = GoogleSearch(proxy=True)
-        print('# all har log with req/resp headers')
-        _, har = br.proxy.new_har()  # start new set of har with default options
-        print(json.dumps(har, indent=2))
-        # or by accessing proxy.har:
-        # print(json.dumps(br.proxy.har, indent=2))
-        # but proxy.har is a property and triggers requests get everytime
-        print(br.search('apple'))
+        # br = GoogleSearch(proxy=True)
+        # print(br.search('apple'))  # search for something
+        bot = wenbot.Bot(proxy=True)
+        input('enter to print log and stop browser')
+        har = bot.proxy.har  # this is a property that pulls data from server
+        # bot.proxy is a browsermobproxy.client.Client object
+        # see https://browsermob-proxy-py.readthedocs.io/en/stable/client.html
+        # har is recorded log
+        ## To start new proxy:
+        # ```
+        # _, har = br.proxy.new_har()  # start new set of har with default options
+        # ```
+        with open('/tmp/har.json', 'wt') as f:
+            print(json.dumps(har, indent=4, default=str), file=f)
+        for entry in pydash.get(har, 'log.entries') or []:
+            print(pydash.get(entry, "request.url"))
+            print(f'    method={pydash.get(entry, "request.method")}')
+            print('    Headers')
+            for header in pydash.get(entry, 'request.headers') or []:
+                print(f'        {header["name"]}: {header["value"]}')
+            print(f'    status={pydash.get(entry, "response.status")}')
     main()
